@@ -1,0 +1,50 @@
+---
+
+# Example sandbox configuration for multi server community installs
+
+- name: Deploy MongoDB
+  hosts: mongo
+  sudo: True
+  gather_facts: True
+  roles:
+  - mongo
+
+- name: Deploy MySQL
+  hosts: mysql
+  sudo: True
+  gather_facts: True
+  vars_files:
+  - roles/edxlocal/defaults/main.yml
+  - roles/edxapp/defaults/main.yml
+  - roles/xqueue/defaults/main.yml
+  - roles/analytics_api/defaults/main.yml
+  roles:
+  - mysql
+  - edxlocal
+
+- name: Configure MySQL
+  hosts: mysql
+  sudo: True
+  vars_files:
+  - roles/edxlocal/defaults/main.yml
+  - roles/edxapp/defaults/main.yml
+  - roles/xqueue/defaults/main.yml
+  - roles/analytics_api/defaults/main.yml
+  tasks:
+  - name: Update MySQL bind address
+    lineinfile:
+      dest: /etc/mysql/my.cnf
+      regexp: '^bind-address'
+      state: absent
+  - name: Restart MySQL
+    service: name=mysql state=restarted
+
+- name: Configure master instance
+  hosts: appmaster
+  tasks:
+    - include: edx_sandbox.yml migrate_db="yes"
+
+- name: Configure other instance(s)
+  hosts: app
+  tasks:
+  - include edx_sandbox.yml migrate_db="no"
