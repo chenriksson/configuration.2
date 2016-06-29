@@ -1,16 +1,9 @@
 ---
 
-# Example sandbox configuration for multi server community installs
-
-- name: Deploy MongoDB
-  hosts: mongo
-  sudo: True
-  gather_facts: True
-  roles:
-  - mongo
+# Example configuration for multi-server community installs of mysql
 
 - name: Deploy MySQL
-  hosts: mysql
+  hosts: all
   sudo: True
   gather_facts: True
   vars_files:
@@ -23,7 +16,7 @@
   - edxlocal
 
 - name: Configure MySQL
-  hosts: mysql
+  hosts: all
   sudo: True
   vars_files:
   - roles/edxlocal/defaults/main.yml
@@ -38,13 +31,3 @@
       state: absent
   - name: Restart MySQL
     service: name=mysql state=restarted
-
-- name: Configure master instance
-  hosts: appmaster
-  tasks:
-    - include: edx_sandbox.yml migrate_db="yes"
-
-- name: Configure other instance(s)
-  hosts: app
-  tasks:
-  - include edx_sandbox.yml migrate_db="no"
