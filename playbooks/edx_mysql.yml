@@ -1,6 +1,6 @@
 ---
 
-# Example configuration for multi-server community installs of mysql
+# Example configuration for multi-server community installs of mysql (and memcached)
 
 - name: Deploy MySQL
   hosts: all
@@ -31,3 +31,15 @@
       state: absent
   - name: Restart MySQL
     service: name=mysql state=restarted
+
+- name: Configure Memcached
+  hosts: all
+  sudo: True
+  tasks:
+  - name: Update Memcached bind address
+    lineinfile:
+      dest: /etc/memcached.conf
+      regexp: '^-l 127.0.0.1'
+      state: absent
+  - name: Restart Memcached
+    service: name=memcached state=restarted
